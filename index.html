@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLIMORFISME & ABSTRAKSI | ADRIEL NOFRA MARCELINO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            background: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ===== GRID KOTAK-KOTAK HITAM GARIS PUTIH BERSINAR ===== */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -2;
+            animation: gridPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes gridPulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.4; }
+        }
+
+        /* Efek glow pada garis grid */
+        .grid-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, #000000 100%);
+            pointer-events: none;
+        }
+
+        /* Kotak-kotak tambahan yang lebih besar */
+        .grid-large {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 100, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 100, 0.08) 1px, transparent 1px);
+            background-size: 80px 80px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Efek sinar menyilang */
+        .cross-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(45deg, 
+                rgba(0, 255, 100, 0.03) 0px, 
+                rgba(0, 255, 100, 0.03) 2px,
+                transparent 2px,
+                transparent 20px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            border: 2px solid #00ff64;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 0 30px rgba(0, 255, 100, 0.3), inset 0 0 20px rgba(0, 255, 100, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                transparent 30%, 
+                rgba(0, 255, 100, 0.1) 50%, 
+                transparent 70%);
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #00ff64;
+            text-shadow: 0 0 15px #00ff64, 0 0 30px #00ff64;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .header h3 {
+            color: #cccccc;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        .header .info {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff64;
+            padding: 12px 30px;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 1.1em;
+            box-shadow: 0 0 20px rgba(0, 255, 100, 0.2);
+        }
+
+        .header .info strong {
+            color: #00ff64;
+        }
+
+        /* Daftar isi */
+        .daftar-isi {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #333;
+            border-radius: 10px;
+        }
+
+        .daftar-isi a {
+            color: #ccc;
+            text-decoration: none;
+            padding: 8px 18px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .daftar-isi a:hover {
+            background: #00ff64;
+            color: #000;
+            border-color: #00ff64;
+            box-shadow: 0 0 15px #00ff64;
+            text-shadow: none;
+        }
+
+        /* Card materi */
+        .card {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .card:hover {
+            border-color: #00ff64;
+            box-shadow: 0 0 30px rgba(0, 255, 100, 0.2);
+        }
+
+        .card h2 {
+            color: #00ff64;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-left: 4px solid #00ff64;
+            padding-left: 15px;
+            text-shadow: 0 0 5px rgba(0, 255, 100, 0.5);
+        }
+
+        .card .deskripsi {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 3px solid #00ff64;
+        }
+
+        .card .deskripsi p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+
+        .card .highlight {
+            background: rgba(0, 255, 100, 0.1);
+            padding: 12px 18px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border: 1px solid rgba(0, 255, 100, 0.3);
+            color: #aaffdd;
+        }
+
+        /* Code container */
+        .code-container {
+            background: #0a0a0a;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+
+        .code-header {
+            background: #111;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .code-badge {
+            background: #00ff64;
+            color: #000;
+            padding: 3px 12px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        .code-content {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .code-content pre {
+            margin: 0;
+            color: #aaffdd;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Tombol */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-run {
+            background: transparent;
+            color: #00ff64;
+            border: 2px solid #00ff64;
+            padding: 10px 25px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-run:hover {
+            background: #00ff64;
+            color: #000;
+            box-shadow: 0 0 20px #00ff64;
+            text-shadow: none;
+        }
+
+        /* Modal Popup */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            width: 95%;
+            height: 90%;
+            background: #000;
+            border: 2px solid #00ff64;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 255, 100, 0.3);
+        }
+
+        .modal-header {
+            position: absolute;
+            top: -40px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            background: #000;
+            padding: 8px 20px;
+            border: 1px solid #00ff64;
+            color: #00ff64;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            background: #00ff64;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 0 20px #00ff64;
+        }
+
+        .modal-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 1px solid #333;
+            margin-top: 40px;
+            border-radius: 10px;
+            color: #888;
+        }
+
+        /* Syntax highlight */
+        .keyword { color: #00ff64; }
+        .type { color: #ffcc00; }
+        .string { color: #ff8888; }
+        .comment { color: #666; }
+        .meta { color: #ff66cc; }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .header h1 { font-size: 1.8em; }
+            .card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-overlay"></div>
+    <div class="grid-large"></div>
+    <div class="cross-glow"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>█ POLIMORFISME & ABSTRAKSI █</h1>
+            <h3>OBJECT ORIENTED PROGRAMMING - DART</h3>
+            <div class="info">
+                <strong>ADRIEL NOFRA MARCELINO</strong> | NIM: 251410017 | Kelas: SI2A
+            </div>
+        </div>
+
+        <div class="daftar-isi">
+            <a href="#materi1">🐾 1. Hewan</a>
+            <a href="#materi2">🔷 2. Bentuk</a>
+            <a href="#materi3">🚗 3. Type Check</a>
+            <a href="#materi4">🎸 4. AlatMusik</a>
+            <a href="#materi5">✈️ 5. Interface</a>
+            <a href="#materi6">📐 6. Static</a>
+            <a href="#materi7">💳 7. Pembayaran</a>
+            <a href="#materi8">📏 8. Geometri</a>
+            <a href="#materi9">💻 9. Pekerja</a>
+            <a href="#materi10">👥 10. Multi Pekerja</a>
+            <a href="#materi11">📋 11. List</a>
+            <a href="#materi12">📱 12. Multiple</a>
+            <a href="#materi13">🧮 13. Math</a>
+            <a href="#materi14">🎬 14. Media</a>
+        </div>
+
+        <!-- MODAL POPUP -->
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title" id="modalTitle">DartPad Demo</span>
+                    <div class="modal-close" onclick="closeModal()">×</div>
+                </div>
+                <iframe class="modal-iframe" id="modalIframe" src="about:blank"></iframe>
+            </div>
+        </div>
+
+        <!-- MATERI 1: HEWAN -->
+        <div id="materi1" class="card">
+            <h2>1. CLASS HEWAN - POLIMORFISME</h2>
+            <div class="deskripsi">
+                <p><strong>Konsep:</strong> Polimorfisme memungkinkan objek dari kelas turunan diperlakukan sebagai objek kelas induk. Method <code>bersuara()</code> memiliki perilaku berbeda pada setiap hewan.</p>
+            </div>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 hewan.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">Hewan</span> {
+  <span class="type">String</span> nama = <span class="string">"Hewan"</span>;
+  <span class="keyword">void</span> bersuara();
+}
+
+<span class="keyword">class</span> <span class="type">Kucing</span> <span class="keyword">extends</span> <span class="type">Hewan</span> {
+  <span class="type">Kucing</span>() { nama = <span class="string">"Kucing"</span>; }
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> bersuara() => print(<span class="string">'$nama: Meong'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Anjing</span> <span class="keyword">extends</span> <span class="type">Hewan</span> {
+  <span class="type">Anjing</span>() { nama = <span class="string">"Anjing"</span>; }
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> bersuara() => print(<span class="string">'$nama: Guk guk'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Burung</span> <span class="keyword">extends</span> <span class="type">Hewan</span> {
+  <span class="type">Burung</span>() { nama = <span class="string">"Burung"</span>; }
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> bersuara() => print(<span class="string">'$nama: Cuit cuit'</span>);
+}
+
+<span class="keyword">void</span> main() {
+  <span class="type">List</span> daftarHewan = [<span class="type">Kucing</span>(), <span class="type">Anjing</span>(), <span class="type">Burung</span>()];
+  <span class="keyword">for</span> (<span class="keyword">var</span> h <span class="keyword">in</span> daftarHewan) h.bersuara();
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=ce1b77c7e9fcebff8faf9d3c2b929285&theme=dark&run=true', 'Demo Hewan - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 2: BENTUK -->
+        <div id="materi2" class="card">
+            <h2>2. CLASS BENTUK - METHOD OVERRIDING</h2>
+            <div class="deskripsi">
+                <p><strong>Konsep:</strong> Method overriding memungkinkan kelas turunan memberikan implementasi spesifik dari method yang sudah didefinisikan di kelas induk.</p>
+            </div>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 bentuk.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">class</span> <span class="type">Bentuk</span> {
+  <span class="keyword">void</span> gambar() => print(<span class="string">'Menggambar bentuk'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Lingkaran</span> <span class="keyword">extends</span> <span class="type">Bentuk</span> {
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> gambar() => print(<span class="string">'Menggambar lingkaran'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Persegi</span> <span class="keyword">extends</span> <span class="type">Bentuk</span> {
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> gambar() => print(<span class="string">'Menggambar persegi'</span>);
+}
+
+<span class="keyword">void</span> main() {
+  <span class="type">List</span> daftarBentuk = [<span class="type">Lingkaran</span>(), <span class="type">Persegi</span>()];
+  <span class="keyword">for</span> (<span class="keyword">var</span> bentuk <span class="keyword">in</span> daftarBentuk) bentuk.gambar();
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=c649bbcaef61985f7672182f2fda2449&theme=dark&run=true', 'Demo Bentuk - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 3: OPERATOR IS & AS -->
+        <div id="materi3" class="card">
+            <h2>3. OPERATOR IS & AS - TYPE CHECK</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 kendaraan.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">class</span> <span class="type">Kendaraan</span> {}
+<span class="keyword">class</span> <span class="type">Mobil</span> <span class="keyword">extends</span> <span class="type">Kendaraan</span> {
+  <span class="keyword">void</span> klakson() => print(<span class="string">'Tin!'</span>);
+}
+
+<span class="keyword">void</span> main() {
+  <span class="type">Kendaraan</span> k = <span class="type">Mobil</span>();
+  <span class="keyword">if</span> (k <span class="keyword">is</span> <span class="type">Mobil</span>) {
+    print(<span class="string">"Cek tipe: k adalah Mobil"</span>);
+    k.klakson();
+  }
+  (k <span class="keyword">as</span> <span class="type">Mobil</span>?)?.klakson();
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=2766c3dde4c91906bc8bac6a6a92b951&theme=dark&run=true', 'Demo Type Check - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 4: ALAT MUSIK -->
+        <div id="materi4" class="card">
+            <h2>4. ALAT MUSIK - ABSTRACT CLASS</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 alat_musik.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">AlatMusik</span> {
+  <span class="type">String</span> nama;
+  <span class="type">AlatMusik</span>(<span class="keyword">this</span>.nama);
+  <span class="keyword">void</span> mainkan();
+  <span class="keyword">void</span> info() => print(<span class="string">'Ini adalah alat musik $nama'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Gitar</span> <span class="keyword">extends</span> <span class="type">AlatMusik</span> {
+  <span class="type">Gitar</span>(<span class="type">String</span> nama) : <span class="keyword">super</span>(nama);
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> mainkan() => print(<span class="string">'Gitar $nama: Jreng jreng...'</span>);
+}
+
+<span class="keyword">void</span> main() {
+  <span class="type">Gitar</span> gitar = <span class="type">Gitar</span>(<span class="string">"Akustik"</span>);
+  gitar.info();
+  gitar.mainkan();
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=03fee5a1ddba5ebeaf4536a2592679c1&theme=dark&run=true', 'Demo AlatMusik - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 5: INTERFACE -->
+        <div id="materi5" class="card">
+            <h2>5. INTERFACE IMPLEMENTS</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 interface.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">Kendaraan</span> { <span class="keyword">void</span> jalan(); }
+<span class="keyword">abstract class</span> <span class="type">Terbang</span> { <span class="keyword">void</span> terbang(); }
+
+<span class="keyword">class</span> <span class="type">Pesawat</span> <span class="keyword">implements</span> <span class="type">Kendaraan</span>, <span class="type">Terbang</span> {
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> jalan() => print(<span class="string">'Pesawat berjalan di landasan'</span>);
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> terbang() => print(<span class="string">'Pesawat terbang di udara'</span>);
+}
+
+<span class="keyword">void</span> main() {
+  <span class="type">Pesawat</span> pesawat = <span class="type">Pesawat</span>();
+  pesawat.jalan();
+  pesawat.terbang();
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=235ba8a8629842422e6e5d89fe3f4ea0&theme=dark&run=true', 'Demo Interface - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 6: STATIC MEMBER -->
+        <div id="materi6" class="card">
+            <h2>6. STATIC MEMBER - TANPA INSTANSIASI</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 math_utils.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">class</span> <span class="type">MathUtils</span> {
+  <span class="keyword">static</span> <span class="type">double</span> pi = 3.14;
+  <span class="keyword">static</span> <span class="type">int</span> add(<span class="type">int</span> a, <span class="type">int</span> b) => a + b;
+}
+
+<span class="keyword">void</span> main() {
+  print(<span class="string">'Nilai pi : ${MathUtils.pi}'</span>);
+  print(<span class="string">'Result   : ${MathUtils.add(10, 20)}'</span>);
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=405cd473df83d9cb184659e691b96d2f&theme=dark&run=true', 'Demo Static - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 7: METODE PEMBAYARAN -->
+        <div id="materi7" class="card">
+            <h2>7. METODE PEMBAYARAN - INTERFACE</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 pembayaran.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">MetodePembayaran</span> { <span class="keyword">void</span> bayar(<span class="type">double</span> jumlah); }
+
+<span class="keyword">class</span> <span class="type">KartuKredit</span> <span class="keyword">implements</span> <span class="type">MetodePembayaran</span> {
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> bayar(<span class="type">double</span> jumlah) => print(<span class="string">'Bayar Rp$jumlah dengan Kartu Kredit'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">EWallet</span> <span class="keyword">implements</span> <span class="type">MetodePembayaran</span> {
+  <span class="meta">@override</span>
+  <span class="keyword">void</span> bayar(<span class="type">double</span> jumlah) => print(<span class="string">'Bayar Rp$jumlah dengan E-Wallet'</span>);
+}
+
+<span class="keyword">void</span> main() {
+  <span class="type">KartuKredit</span> kartu = <span class="type">KartuKredit</span>();
+  <span class="type">EWallet</span> ewallet = <span class="type">EWallet</span>();
+  kartu.bayar(50000);
+  ewallet.bayar(25000);
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=c9c2b0bbb7bc0099ffb9df7d3b7d52f5&theme=dark&run=true', 'Demo Pembayaran - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 8: GEOMETRI -->
+        <div id="materi8" class="card">
+            <h2>8. BENTUK GEOMETRI - ABSTRAKSI</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 geometri.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">Bentuk</span> {
+  <span class="type">double</span> hitungLuas();
+  <span class="type">double</span> hitungKeliling();
+  <span class="keyword">void</span> info() => print(<span class="string">'Luas: ${hitungLuas()}, Keliling: ${hitungKeliling()}'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Persegi</span> <span class="keyword">extends</span> <span class="type">Bentuk</span> {
+  <span class="type">double</span> sisi;
+  <span class="type">Persegi</span>(<span class="keyword">this</span>.sisi);
+  <span class="meta">@override</span> <span class="type">double</span> hitungLuas() => sisi * sisi;
+  <span class="meta">@override</span> <span class="type">double</span> hitungKeliling() => 4 * sisi;
+}
+
+<span class="keyword">class</span> <span class="type">Lingkaran</span> <span class="keyword">extends</span> <span class="type">Bentuk</span> {
+  <span class="type">double</span> radius;
+  <span class="type">Lingkaran</span>(<span class="keyword">this</span>.radius);
+  <span class="meta">@override</span> <span class="type">double</span> hitungLuas() => 3.14 * radius * radius;
+  <span class="meta">@override</span> <span class="type">double</span> hitungKeliling() => 2 * 3.14 * radius;
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=1df65dff904e69b776e3915f1f91d5cd&theme=dark&run=true', 'Demo Geometri - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 9: PEKERJA BONUS 1 -->
+        <div id="materi9" class="card">
+            <h2>9. CLASS PEKERJA - BONUS 1</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 pekerja.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">Pekerja</span> {
+  <span class="type">String</span> nama;
+  <span class="type">Pekerja</span>(<span class="keyword">this</span>.nama);
+  <span class="keyword">void</span> bekerja();
+  <span class="keyword">void</span> info() => print(<span class="string">"Nama: $nama"</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Programmer</span> <span class="keyword">extends</span> <span class="type">Pekerja</span> {
+  <span class="type">Programmer</span>(<span class="type">String</span> nama) : <span class="keyword">super</span>(nama);
+  <span class="meta">@override</span> <span class="keyword">void</span> bekerja() => print(<span class="string">"$nama bekerja sebagai Programmer"</span>);
+}
+
+<span class="keyword">void</span> main() {
+  <span class="type">Programmer</span> p = <span class="type">Programmer</span>(<span class="string">"Andi"</span>);
+  p.info();
+  p.bekerja();
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=2ef67fa3cc5dac5d94eaf54440d1577d&theme=dark&run=true', 'Demo Pekerja - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 10: MULTI PEKERJA -->
+        <div id="materi10" class="card">
+            <h2>10. MULTI PEKERJA - BONUS 2</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 multi_pekerja.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">Pekerja</span> {
+  <span class="type">String</span> nama;
+  <span class="type">Pekerja</span>(<span class="keyword">this</span>.nama);
+  <span class="keyword">void</span> bekerja();
+}
+
+<span class="keyword">class</span> <span class="type">Programmer</span> <span class="keyword">extends</span> <span class="type">Pekerja</span> {
+  <span class="type">Programmer</span>(<span class="type">String</span> nama) : <span class="keyword">super</span>(nama);
+  <span class="meta">@override</span> <span class="keyword">void</span> bekerja() => print(<span class="string">"$nama adalah Programmer"</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Dokter</span> <span class="keyword">extends</span> <span class="type">Pekerja</span> {
+  <span class="type">Dokter</span>(<span class="type">String</span> nama) : <span class="keyword">super</span>(nama);
+  <span class="meta">@override</span> <span class="keyword">void</span> bekerja() => print(<span class="string">"$nama adalah Dokter"</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Guru</span> <span class="keyword">extends</span> <span class="type">Pekerja</span> {
+  <span class="type">Guru</span>(<span class="type">String</span> nama) : <span class="keyword">super</span>(nama);
+  <span class="meta">@override</span> <span class="keyword">void</span> bekerja() => print(<span class="string">"$nama adalah Guru"</span>);
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=f5467400a854dd0e309cd0157abd4968&theme=dark&run=true', 'Demo Multi Pekerja - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 11: LIST POLIMORFISME -->
+        <div id="materi11" class="card">
+            <h2>11. POLIMORFISME LIST - BONUS 3</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 list_polimorfisme.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">Pekerja</span> {
+  <span class="type">String</span> nama;
+  <span class="type">Pekerja</span>(<span class="keyword">this</span>.nama);
+  <span class="keyword">void</span> bekerja();
+}
+
+<span class="keyword">class</span> <span class="type">Programmer</span> <span class="keyword">extends</span> <span class="type">Pekerja</span> {
+  <span class="type">Programmer</span>(<span class="type">String</span> nama) : <span class="keyword">super</span>(nama);
+  <span class="meta">@override</span> <span class="keyword">void</span> bekerja() => print(<span class="string">"$nama sedang coding"</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Dokter</span> <span class="keyword">extends</span> <span class="type">Pekerja</span> {
+  <span class="type">Dokter</span>(<span class="type">String</span> nama) : <span class="keyword">super</span>(nama);
+  <span class="meta">@override</span> <span class="keyword">void</span> bekerja() => print(<span class="string">"$nama sedang mengobati pasien"</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Guru</span> <span class="keyword">extends</span> <span class="type">Pekerja</span> {
+  <span class="type">Guru</span>(<span class="type">String</span> nama) : <span class="keyword">super</span>(nama);
+  <span class="meta">@override</span> <span class="keyword">void</span> bekerja() => print(<span class="string">"$nama sedang mengajar"</span>);
+}
+
+<span class="keyword">void</span> main() {
+  <span class="type">List</span> daftar = [<span class="type">Programmer</span>(<span class="string">"Andi"</span>), <span class="type">Dokter</span>(<span class="string">"Budi"</span>), <span class="type">Guru</span>(<span class="string">"Citra"</span>)];
+  <span class="keyword">for</span>(<span class="keyword">var</span> p <span class="keyword">in</span> daftar) p.bekerja();
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=3e1c07a47e539adc068196207ce1f6b1&theme=dark&run=true', 'Demo List Polimorfisme - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 12: MULTIPLE INTERFACE -->
+        <div id="materi12" class="card">
+            <h2>12. MULTIPLE INTERFACE - BONUS 4</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 multiple_interface.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">Komputer</span> { <span class="keyword">void</span> menjalankanProgram(); }
+<span class="keyword">abstract class</span> <span class="type">Kamera</span> { <span class="keyword">void</span> ambilFoto(); }
+<span class="keyword">abstract class</span> <span class="type">Telepon</span> { <span class="keyword">void</span> menelepon(); }
+
+<span class="keyword">class</span> <span class="type">Tablet</span> <span class="keyword">implements</span> <span class="type">Komputer</span>, <span class="type">Kamera</span>, <span class="type">Telepon</span> {
+  <span class="meta">@override</span> <span class="keyword">void</span> menjalankanProgram() => print(<span class="string">"Tablet menjalankan program"</span>);
+  <span class="meta">@override</span> <span class="keyword">void</span> ambilFoto() => print(<span class="string">"Tablet mengambil foto"</span>);
+  <span class="meta">@override</span> <span class="keyword">void</span> menelepon() => print(<span class="string">"Tablet menelepon"</span>);
+}
+
+<span class="keyword">void</span> main() {
+  <span class="type">Tablet</span> tablet = <span class="type">Tablet</span>();
+  tablet.menjalankanProgram();
+  tablet.ambilFoto();
+  tablet.menelepon();
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=277c0033b3436e0d23cae8917d889f17&theme=dark&run=true', 'Demo Multiple Interface - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 13: UTILITY MATH -->
+        <div id="materi13" class="card">
+            <h2>13. UTILITY MATH - BONUS 5</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 math_utils_full.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">import</span> 'dart:math';
+
+<span class="keyword">class</span> <span class="type">MathUtils</span> {
+  <span class="keyword">static</span> <span class="type">int</span> faktorial(<span class="type">int</span> n) => n <= 1 ? 1 : n * faktorial(n-1);
+  <span class="keyword">static</span> <span class="type">bool</span> cekPrima(<span class="type">int</span> n) {
+    <span class="keyword">if</span>(n <= 1) <span class="keyword">return false</span>;
+    <span class="keyword">for</span>(<span class="type">int</span> i = 2; i <= sqrt(n); i++) <span class="keyword">if</span>(n % i == 0) <span class="keyword">return false</span>;
+    <span class="keyword">return true</span>;
+  }
+  <span class="keyword">static</span> <span class="type">double</span> rataRata(<span class="type">List</span> list) => list.reduce((a,b)=>a+b) / list.length;
+}
+
+<span class="keyword">void</span> main() {
+  print(<span class="string">"Faktorial 5 = ${MathUtils.faktorial(5)}"</span>);
+  print(<span class="string">"Prima 7 = ${MathUtils.cekPrima(7)}"</span>);
+  print(<span class="string">"Rata-rata = ${MathUtils.rataRata([10,20,30,40,50])}"</span>);
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=1e32dcfbc2ddd60f081da41ae439416e&theme=dark&run=true', 'Demo Math Utils - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- MATERI 14: MEDIA PLAYER -->
+        <div id="materi14" class="card">
+            <h2>14. MEDIA PLAYER - POLYMORPHISM</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>📁 media_player.dart</span>
+                    <span class="code-badge">DART</span>
+                </div>
+                <div class="code-content">
+                    <pre><span class="comment">// Nama : ADRIEL NOFRA MARCELINO</span>
+<span class="comment">// NIM  : 251410017</span>
+<span class="comment">// Kelas: SI2A</span>
+
+<span class="keyword">abstract class</span> <span class="type">MediaPlayer</span> { <span class="keyword">void</span> play(); }
+
+<span class="keyword">class</span> <span class="type">AudioPlayer</span> <span class="keyword">extends</span> <span class="type">MediaPlayer</span> {
+  <span class="meta">@override</span> <span class="keyword">void</span> play() => print(<span class="string">'Memutar Audio MP3...'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">VideoPlayer</span> <span class="keyword">extends</span> <span class="type">MediaPlayer</span> {
+  <span class="meta">@override</span> <span class="keyword">void</span> play() => print(<span class="string">'Memutar Video MP4...'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">StreamingPlayer</span> <span class="keyword">extends</span> <span class="type">MediaPlayer</span> {
+  <span class="meta">@override</span> <span class="keyword">void</span> play() => print(<span class="string">'Memutar Live Stream...'</span>);
+}
+
+<span class="keyword">class</span> <span class="type">Playlist</span> {
+  <span class="type">List</span> media = [];
+  <span class="keyword">void</span> playAll() => media.forEach((m) => m.play());
+}
+
+<span class="keyword">void</span> main() {
+  <span class="keyword">var</span> list = <span class="type">Playlist</span>();
+  list.media = [<span class="type">AudioPlayer</span>(), <span class="type">VideoPlayer</span>(), <span class="type">StreamingPlayer</span>()];
+  list.playAll();
+}</pre>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-run" onclick="openModal('https://dartpad.dev/embed-dart.html?id=e0573c74382c52c09908888ba247f525&theme=dark&run=true', 'Demo Media Player - Adriel Nofra')">▶ JALANKAN DI DARTPAD</button>
+            </div>
+        </div>
+
+        <!-- KESIMPULAN -->
+        <div class="card">
+            <h2>█ KESIMPULAN █</h2>
+            <div class="deskripsi">
+                <p>✨ <strong>Abstraksi</strong> - Menyembunyikan detail implementasi dan hanya menampilkan fungsi penting.</p>
+                <p>✨ <strong>Polimorfisme</strong> - Memungkinkan satu method memiliki banyak bentuk tergantung objeknya.</p>
+                <p>✨ <strong>Inheritance</strong> - Memungkinkan pembuatan class baru berdasarkan class yang sudah ada.</p>
+                <p>✨ <strong>Interface</strong> - Berfungsi sebagai kontrak yang memaksa class turunan mengimplementasikan method.</p>
+                <p>✨ Dengan menggabungkan konsep OOP, program menjadi lebih mudah dikembangkan dan dipelihara.</p>
+            </div>
+            <div class="highlight">
+                <strong>ADRIEL NOFRA MARCELINO</strong> | NIM: 251410017 | KELAS: SI2A<br>
+                Semua source code telah disesuaikan dengan identitas baru.
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2026 - ADRIEL NOFRA MARCELINO | NIM: 251410017 | Kelas: SI2A</p>
+        <p style="margin-top: 8px;">█ POLIMORFISME & ABSTRAKSI - DART OOP █</p>
+    </div>
+
+    <script>
+        function openModal(url, title) {
+            const modal = document.getElementById('modalOverlay');
+            const iframe = document.getElementById('modalIframe');
+            const titleElement = document.getElementById('modalTitle');
+            
+            iframe.src = url;
+            titleElement.textContent = title;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('modalOverlay');
+            const iframe = document.getElementById('modalIframe');
+            
+            modal.style.display = 'none';
+            iframe.src = 'about:blank';
+            document.body.style.overflow = 'auto';
+        }
+        
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>
